@@ -1,0 +1,46 @@
+body {
+  background-color: #f0f2f5; /* Facebook's light gray background */
+  font-family: Arial, sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.container {
+  display: flex;
+  width: 980px;
+  align-items: center;
+}
+
+.left-box { width: 50%; padding-right: 32px; }
+
+.logo { color: #1877f2; font-size: 60px; margin-bottom: 0; }
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 396px;
+  text-align: center;
+}
+
+input {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 12px;
+  border: 1px solid #dddfe2;
+  border-radius: 6px;
+}
+
+.login-btn {
+  background-color: #1877f2;
+  color: white;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 6px;
+  font-weight: bold;
+}
