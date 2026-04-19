@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Business - Customer Registration</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        .message {
+            margin-top: 20px;
+            padding: 12px;
+            border-radius: 8px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="form-card">
+            <h1>📝 Customer Registration</h1>
+            <p class="subtitle">Fill out the form and we'll get back to you within 24 hours</p>
+
+            <!-- THIS FORM IS CONNECTED TO YOUR FORMSPREE ENDPOINT -->
+            <form id="customerForm">
+                <div class="form-group">
+                    <label>Full Name *</label>
+                    <input type="text" id="name" name="name" required placeholder="Enter your full name">
+                </div>
+
+                <div class="form-group">
+                    <label>Email Address *</label>
+                    <input type="email" id="email" name="email" required placeholder="your@email.com">
+                </div>
+
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="tel" id="phone" name="phone" placeholder="+1 234 567 8900">
+                </div>
+
+                <div class="form-group">
+                    <label>Message / Questions</label>
+                    <textarea id="message" name="message" rows="4" placeholder="Tell us what you need..."></textarea>
+                </div>
+
+                <button type="submit">🚀 Submit Request</button>
+            </form>
+
+            <div id="messageBox" class="message"></div>
+            <div id="loadingSpinner" class="loading">
+                <div class="spinner"></div>
+                <p style="margin-top: 10px;">Sending your information...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // YOUR ACTUAL FORMSPREE ENDPOINT - Already configured!
+        const FORM_ENDPOINT = "https://formspree.io/f/xrerkrgr";
+        
+        const form = document.getElementById('customerForm');
+        const messageBox = document.getElementById('messageBox');
+        const loadingSpinner = document.getElementById('loadingSpinner');
+        
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault(); // Stop page refresh
+            
+            // Show loading spinner
+            loadingSpinner.classList.add('active');
+            messageBox.className = 'message';
+            messageBox.style.display = 'none';
+            
+            // Collect form data
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                message: document.getElementById('message').value,
+                _subject: `New Customer Registration from ${document.getElementById('name').value}`,
+                _replyto: document.getElementById('email').value
+            };
+            
+            try {
+                // Send to Formspree
+                const response = await fetch(FORM_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    // Success!
+                    showMessage('✅ Thank you! We\'ve received your information. Check your email for confirmation!', 'success');
+                    form.reset(); // Clear the form
+                    
+                    // Optional: Also save locally as backup
+                    saveToLocalBackup(formData);
+                } else {
+                    throw new Error(result.error || 'Form submission failed');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                
+                // Save to localStorage as offline backup
+                saveToLocalBackup(formData);
+                
+                showMessage('⚠️ There was an issue. Your information has been saved locally and will be sent when you\'re back online.', 'error');
+            } finally {
+                loadingSpinner.classList.remove('active');
+            }
+        });
+        
+        // Backup to localStorage (works offline too!)
+        function saveToLocalBackup(formData) {
+            let backups = JSON.parse(localStorage.getItem('form_backups') || '[]');
+            backups.push({
+                ...formData,
+                backupId: Date.now(),
+                status: 'pending',
+                timestamp: new Date().toISOString()
+            });
+            localStorage.setItem('form_backups', JSON.stringify(backups));
+            
+            console.log('Data backed up locally:', formData);
+        }
+        
+        function showMessage(text, type) {
+            messageBox.textContent = text;
+            messageBox.className = `message ${type}`;
+            messageBox.style.display = 'block';
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                messageBox.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Retry failed submissions when back online
+        window.addEventListener('online', async () => {
+            const backups = JSON.parse(localStorage.getItem('form_backups') || '[]');
+            const pendingBackups = backups.filter(b => b.status === 'pending');
+            
+            if (pendingBackups.length > 0) {
+                showMessage(`📡 Back online! Retrying ${pendingBackups.length} pending submissions...`, 'success');
+                
+                for (let backup of pendingBackups) {
+                    try {
+                        const response = await fetch(FORM_ENDPOINT, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json'
+                            },
+                            body: JSON.stringify(backup)
+                        });
+                        
+                        if (response.ok) {
+                            backup.status = 'sent';
+                        }
+                    } catch (err) {
+                        console.error('Failed to retry:', err);
+                    }
+                }
+                
+                localStorage.setItem('form_backups', JSON.stringify(backups));
+            }
+        });
+    </script>
+</body>
+</html>
